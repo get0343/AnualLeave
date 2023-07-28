@@ -1,0 +1,76 @@
+.group{
+    display: flex;
+    gap:10px;
+}
+
+.anual-leave{
+    .header{
+        display: flex;
+        .left{
+            flex:1;
+        }
+        .right{
+            flex:1;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap:10px;
+
+            .result{
+                font-weight: bold;
+                font-size: 20px;
+            }
+
+            .value{
+                font-size:20px;
+            }
+        }
+    }
+}
+
+.add-leave.container{
+    border:1px solid;
+    margin-top:10px;
+    >.title{
+        border-bottom: 1px solid;
+        font-weight: bold;
+        padding:5px;
+    }
+
+    .add-leave-body{
+        display: flex;
+        
+        .left{
+            padding:10px;
+            display: flex;
+            flex-direction: column;
+            gap:10px;
+            flex:1.2;            
+            border-right:1px solid;
+        }
+        .right{
+            flex:1;
+            padding:10px;
+
+            .leaves-body{
+                p{
+                    display: flex;
+                    gap:10px;
+
+                    .year{
+                        font-weight: bold;
+                    }
+                }
+                
+            }
+        }
+        
+    }
+}
+
+.leave-footer-container{
+    margin:5px;
+    button{
+        padding:5px;
+    }
+}
