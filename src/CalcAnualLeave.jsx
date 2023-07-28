@@ -2,7 +2,7 @@ import moment from "moment/moment";
 import { useRef } from "react";
 import { useState } from "react";
 
-const CalcAnualLeave = ({hireDate}) => {
+const CalcAnualLeave = () => {
     const [hiredDate, setHiredDate] = useState();
     const [hiredYear, setHiredYear] = useState();
     const [leavesTaken, setLeavesTaken] = useState([]);
@@ -171,7 +171,7 @@ const CalcAnualLeave = ({hireDate}) => {
             <div className="header">
                 <div className="left">
                     <div className="group">
-                        <span className="label">H Date</span>
+                        <span className="label">Hired Date</span>
                         <input type="date" name="" id="" onChange={handleHiredDateSelect} />
                     </div>
                 </div>

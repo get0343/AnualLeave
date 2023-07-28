@@ -10,11 +10,9 @@ const App = () => {
     <>
         {/* <CalcDateDiff />
         <DateChecker dateToCheck={"2023-07-20"} startDate={"2023-07-15"} endDate={"2023-07-28"} /> */}
-        <CalcAnualLeave hireDate={"2021-06-02"} />
+        <CalcAnualLeave />
     </>
   )
 }
 
-// ReactDOM.render(<App />, document.getElementById('root'));
-const root = createRoot(document.getElementById('root'))
-root.render(<App />);
+export default App;
