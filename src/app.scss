@@ -74,3 +74,48 @@
         padding:5px;
     }
 }
+
+.leave-summary{
+    margin-top:20px;
+    >.title{
+        font-weight: bold;
+        font-size:24px;
+        margin-bottom: 10px;    
+    }
+    table{
+        width:100%;
+        border:1px solid #ccc;
+        border-collapse: separate;
+        border-spacing: 0;
+
+        thead{
+            tr{
+                th{
+                    border:1px solid #ccc;
+                    text-align: center;
+                    &.expired{
+                        background-color: red;
+                        color:white;
+                    }
+                    .year{
+                        display: block;
+                    }
+
+                    .fyear{
+                        font-size:14px;
+                        font-weight: 400;
+                    }
+                }
+            }
+        }
+
+        tbody{
+            tr{
+                td,th{
+                    text-align: center;
+                    border:1px solid #ccc;
+                }
+            }
+        }
+    }
+}
