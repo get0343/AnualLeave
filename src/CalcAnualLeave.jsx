@@ -11,6 +11,8 @@ const CalcAnualLeave = () => {
     const [emp_hired_date, setEmpHiredDate] = useState();
     const [leaves, setLeaves] = useState([]);
     const [expired_years, setExpiredYears] = useState([]);
+    const [years,setYears] = useState([]);
+    
 
     const leave_year = useRef();
     const leave_taken = useRef();
@@ -26,9 +28,22 @@ const CalcAnualLeave = () => {
     
     let today = moment().format('YYYY-MM-DD');
 
-    // useEffect(()=>{
-    //     console.log(leaves);
-    // },[leaves])
+    useEffect(()=>{
+        //console.log(hiredDate);
+        //console.log(moment(hiredDate,'YYYY-MM-DD').isValid());
+        if(moment(hiredDate,'YYYY-MM-DD').isValid()){
+            let av = getTotalAvailable();
+            setAvailable(av);
+        }
+    },[leaves])
+
+    useEffect(()=>{
+        if(moment(hiredDate,'YYYY-MM-DD').isValid()){
+            let years = getFiscalYears(emp_hired_date);
+            setYears(years);
+        }
+        
+    },[hiredDate])
 
     /**
      * a function that will calculate the duration between two dates
@@ -63,25 +78,53 @@ const CalcAnualLeave = () => {
         return result;
     }
 
-    const expirePreviousFisalYearLeave = (start_year) => {
-        console.log(start_year);
-        console.log(leaves.length);
-        leaves.forEach(leave => {
-            console.log(leave);
-            if(parseInt(leave.year.name) == parseInt(start_year)){
-                leave.expire = true;
-                console.log("yes");
-                console.log(leave);
-                setLeaves(prev => [...prev, leave]);              
+    const getFiscalYears = (hired_date) => {
+        let fyear_start;
+        let fyear_end;
+        let year = parseInt(moment(emp_hired_date).format('YYYY'));
+        let years = [];
+        let fyear_count = 0;
+        
+        while(true){
+            
+            fyear_start = moment(`${(year - 1)}-07-01`).format('YYYY-MM-DD');
+            fyear_end = moment(`${year}-06-30`).format('YYYY-MM-DD');
+            
+            if(fyear_count == 0){
+                if(moment(hired_date).isBetween(fyear_start, fyear_end)){
+                    console.log(`year:${year}, start:${fyear_start}, end:${fyear_end}`);
+                    years.push(year);
+                    year += 1;
+                    fyear_count += 1;
+                } else {
+                    year += 1;
+                }
+                console.log(today);
+                    if(moment(today).isBetween(fyear_start, fyear_end)){
+                        console.log('exiting');
+                        break;
+                    }
+                
+            } else {
+                console.log(`year:${year}, start:${fyear_start}, end:${fyear_end}`);
+                years.push(year);
+                if(moment(today).isBetween(fyear_start, fyear_end)){
+                    break;
+                }
+                year += 1;
+                fyear_count += 1;
             }
-        });        
+        }
+
+        return years;
     }
 
     const generateAnualLeaves = (start_year) => {
         let start_fyear;
         let end_fyear; 
         let exp_y = []; 
-        let dec = 2; 
+        let dec = 2;
+        let fy_exp = 0;
 
         while(true){
             let leave = {
@@ -100,7 +143,14 @@ const CalcAnualLeave = () => {
             end_fyear = moment(`${start_year}-06-30`).format('YYYY-MM-DD'); // gets the given end of fiscal year
 
             ltaken = getLeaveTaken(start_year)?.taken;
-            ltaken = ltaken ? ltaken : 0;            
+            ltaken = ltaken ? ltaken : 0; 
+            
+            //check if the fiscal year is already expired and add it to the list.
+                //every fiscal year after two years count from it, should expire
+                fy_exp = fyear_count - 2
+                if(fy_exp >= 0){
+                    exp_y.push(fy_exp);
+                }
 
             if(fyear_count == 0){
                 if(moment(emp_hired_date).isBetween(start_fyear, end_fyear)){
@@ -151,13 +201,15 @@ const CalcAnualLeave = () => {
                     initial_entitlement = default_entitlement + increment_days;
                     leave.entitlement = initial_entitlement; 
                    
-                    exp_y.push(fyear_count - dec);
-                    dec += 1;
+                    //exp_y.push(fyear_count - dec);
+                    //dec += 1;
                     
                 } else {
                     initial_entitlement = default_entitlement + increment_days;
                     leave.entitlement = initial_entitlement;                 
                 }
+
+                //add the leave to the list of leaves array
                 setLeaves(prev => [...prev, leave]);          
                 start_year += 1;
                 fyear_count += 1;
@@ -166,6 +218,18 @@ const CalcAnualLeave = () => {
         }
         setExpiredYears(exp_y);
 
+    }
+
+    const getTotalAvailable = () => {
+        let total = 0;
+        leaves.forEach(leave => {
+            if(!expired_years.includes(parseInt(leave.year.id))){
+                let av = leave.entitlement - leave.leaves_taken;
+                total += av;
+            }
+        });
+
+        return total;
     }
 
     /**
@@ -249,14 +313,14 @@ const CalcAnualLeave = () => {
         setHiredDate(selected);
         setHiredYear(hdate.format('YYYY'));
         setEmpHiredDate(hdate.format('YYYY-MM-DD'));
-       
     }
 
     const getYearsOptions = () => {
+        
         const options = [];
-        for(let i = hiredYear; i <= 2023; i++){
-            options.push(<option value={i}>{i}</option>);
-        }
+        years.forEach(year => {
+            options.push(<option value={year}>{year}</option>);
+        });
 
         return options;
     }
@@ -272,8 +336,8 @@ const CalcAnualLeave = () => {
         //const result =  getAnualLeaveRemaining(parseInt(moment(hiredDate).format('YYYY')));
         //setAvailable(result);
         setLeaves([]);
-        generateAnualLeaves(parseInt(moment(hiredDate).format('YYYY')));    
-        console.log(expired_years);
+        generateAnualLeaves(parseInt(moment(hiredDate).format('YYYY')));
+       
     }
 
     return (
@@ -288,8 +352,8 @@ const CalcAnualLeave = () => {
                     </div>
                 </div>
                 <div className="right">
-                    <span className="result">Available</span>
-                    <span className="value">{available}</span>
+                    <span className="result">Available:</span>
+                    <span className="value">{available} Days</span>
                 </div>
             </div>
             
@@ -298,7 +362,7 @@ const CalcAnualLeave = () => {
                 <div className="add-leave-body">
                     <div className="left">
                         <div className="group">
-                            <span className="label">Select Year</span>
+                            <span className="label">Fiscal Year</span>
                             <select name="" id="" ref={leave_year}>
                                {getYearsOptions().map(op => {
                                     return op;
@@ -314,7 +378,10 @@ const CalcAnualLeave = () => {
                         </div>
                     </div>
                     <div className="right">
-                        <div className="title">All Leaves</div>
+                        <div className="title">
+                            <span>All Leaves</span>
+                            <button onClick={()=>setLeavesTaken([])}>Clear</button>
+                        </div>
                         <div className="leaves-body">
                             {leavesTaken.map(l => {
                                 return (
