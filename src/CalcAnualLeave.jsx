@@ -12,6 +12,7 @@ const CalcAnualLeave = () => {
     const [leaves, setLeaves] = useState([]);
     const [expired_years, setExpiredYears] = useState([]);
     const [years,setYears] = useState([]);
+    const requestDate = useRef();
     
 
     const leave_year = useRef();
@@ -38,6 +39,7 @@ const CalcAnualLeave = () => {
     },[leaves])
 
     useEffect(()=>{
+        setLeavesTaken([]);
         if(moment(hiredDate,'YYYY-MM-DD').isValid()){
             let years = getFiscalYears(emp_hired_date);
             setYears(years);
@@ -84,7 +86,14 @@ const CalcAnualLeave = () => {
         let year = parseInt(moment(emp_hired_date).format('YYYY'));
         let years = [];
         let fyear_count = 0;
-        
+
+        if(requestDate.current.value){
+            today = moment(requestDate.current.value).format('YYYY-MM-DD');
+        } else {
+            today = moment().format('YYYY-MM-DD');
+        }
+       
+        //console.log(`today: ${today}, reqDate: ${requestDate?.current.value}`);
         while(true){
             
             fyear_start = moment(`${(year - 1)}-07-01`).format('YYYY-MM-DD');
@@ -99,14 +108,14 @@ const CalcAnualLeave = () => {
                 } else {
                     year += 1;
                 }
-                console.log(today);
+                
                     if(moment(today).isBetween(fyear_start, fyear_end)){
                         console.log('exiting');
                         break;
                     }
                 
             } else {
-                console.log(`year:${year}, start:${fyear_start}, end:${fyear_end}`);
+                //console.log(`year:${year}, start:${fyear_start}, end:${fyear_end}`);
                 years.push(year);
                 if(moment(today).isBetween(fyear_start, fyear_end)){
                     break;
@@ -126,6 +135,13 @@ const CalcAnualLeave = () => {
         let dec = 2;
         let fy_exp = 0;
 
+        if(requestDate.current.value){
+            today = moment(requestDate.current.value).format('YYYY-MM-DD');
+        } else {
+            today = moment().format('YYYY-MM-DD');
+        }
+
+        //today = moment(requestDate?.current.value ? requestDate.current.value : '').format('YYYY-MM-DD');
         while(true){
             let leave = {
                 year:{
@@ -250,21 +266,21 @@ const CalcAnualLeave = () => {
             console.log(`count=${fyear_count}, fstart=${start_fyear}, fend=${end_fyear}`);
             ltaken = getLeaveTaken(start_year)?.taken;
             ltaken = ltaken ? ltaken : 0;
-            console.log(`ltaken:${ltaken}`);
+            //console.log(`ltaken:${ltaken}`);
 
             if(fyear_count == 0){
                 if(moment(emp_hired_date).isBetween(start_fyear, end_fyear)){
                     let worked_month = calculateDateDiff(emp_hired_date, end_fyear)[1];
-                    console.log(`worked:${worked_month}`);
+                    //console.log(`worked:${worked_month}`);
                     initial_entitlement = Math.floor(default_entitlement / 12 * worked_month); //the initial entitlement will be not the full year entitlement. it is calculated for the number of months worked                    
                     remaining_days = initial_entitlement - ltaken;
-                    console.log(`init:${initial_entitlement}, avail: ${remaining_days}`);                    
+                    //console.log(`init:${initial_entitlement}, avail: ${remaining_days}`);                    
                     start_year += 1;
                     fyear_count += 1;
                 } else {
                     start_year += 1;
                     //fyear_count += 1;
-                    console.log(start_year);
+                    //console.log(start_year);
                 }
             } else {                
                                 
@@ -280,11 +296,11 @@ const CalcAnualLeave = () => {
 
                     let worked_month = calculateDateDiff(start_fyear, today)[1];
                     worked_month = worked_month == 0 ? 1 : worked_month; // to avoid multiplication by zero
-                    console.log(`wmonth: ${worked_month}, inc:${increment_days}`);
+                    //console.log(`wmonth: ${worked_month}, inc:${increment_days}`);
                     initial_entitlement = Math.floor((default_entitlement + increment_days) / 12 * worked_month);
-                    console.log(`last init:${initial_entitlement}`);                    
+                    //console.log(`last init:${initial_entitlement}`);                    
                     remaining_days += initial_entitlement - ltaken;
-                    console.log(`last: ${remaining_days}`);
+                    //console.log(`last: ${remaining_days}`);
                     break;
                 }
 
@@ -292,13 +308,13 @@ const CalcAnualLeave = () => {
                     increment_days += 1;                    
                     initial_entitlement = default_entitlement + increment_days;                    
                     remaining_days = initial_entitlement - ltaken; // the prevous remaining days will not be added only this fiscal year entitlement is added.
-                    console.log(`Reset: ${remaining_days}`);
+                    //console.log(`Reset: ${remaining_days}`);
                 } else {
                     initial_entitlement = default_entitlement + increment_days;                    
                     remaining_days += initial_entitlement - ltaken;
                 }
 
-                console.log(`incd: ${increment_days}, Rem: ${remaining_days}`);
+                //console.log(`incd: ${increment_days}, Rem: ${remaining_days}`);
                 start_year += 1;
                 fyear_count += 1;
             }
@@ -335,6 +351,7 @@ const CalcAnualLeave = () => {
     const handleLeaveCalc = () => {
         //const result =  getAnualLeaveRemaining(parseInt(moment(hiredDate).format('YYYY')));
         //setAvailable(result);
+        console.log(`Request Date: ${requestDate.current.value}`);
         setLeaves([]);
         generateAnualLeaves(parseInt(moment(hiredDate).format('YYYY')));
        
@@ -343,17 +360,25 @@ const CalcAnualLeave = () => {
     return (
         <>
         <div className="anual-leave">
-            <h1>A-Leave</h1>
+            <h1>Anual Leave Calculator</h1>
             <div className="header">
                 <div className="left">
                     <div className="group">
                         <span className="label">Hired Date</span>
-                        <input type="date" name="" id="" onChange={handleHiredDateSelect} />
+                        <input type="date" onChange={handleHiredDateSelect} />
+                    </div>
+                    <div className="group">
+                        <span className="label">Request Date</span>
+                        <input type="date" ref={requestDate}/>
                     </div>
                 </div>
                 <div className="right">
-                    <span className="result">Available:</span>
-                    <span className="value">{available} Days</span>
+                {available ? (
+                    <>
+                        <span className="result">Available:</span>
+                        <span className="value">{available} Days</span>
+                    </>
+                    ) : ''}
                 </div>
             </div>
             
@@ -399,52 +424,59 @@ const CalcAnualLeave = () => {
         </div>
 
         <div className="leave-summary">
-            <div className="title">Leave Summary</div>
+           
             {leaves.length > 0 ? (
-               
-                <table>
-                    <thead>
-                        <tr>
-                        <th>&nbsp;</th>
-                            {leaves.map(l => {                                
-                                return (
-                                    <th className={expired_years.includes(parseInt(l.year.id)) ? 'expired' : ''}>
-                                        <span className="year">{l?.year.name}</span>
-                                        <span className="fyear">{l?.year.fiscal_year_start} - {l?.year.fiscal_year_end}</span>
-                                    </th>
-                                )
-                            })}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th>Entitlement</th>
-                            {leaves?.map(l => {
-                                return (
-                                    <td key={l.year.id}>{l.entitlement}</td>
-                                )
-                            })}
-                        </tr>
-                        <tr>
-                            <th>Leaves Taken</th>
-                            {leaves?.map(l => {
-                                return (
-                                    <td key={l.year.id}>{l.leaves_taken}</td>
-                                )
-                            })}
-                        </tr>
-                        <tr>
-                            <th>Total</th>
-                            {leaves?.map(l => {
-                                return (
-                                    <td key={l.year.id}>{l.entitlement - l.leaves_taken}</td>
-                                )
-                            })}
-                        </tr>
-                    </tbody>
-                </table>
+                <>
+                    <div className="title">Leave Summary</div>
+                    <table>
+                        <thead>
+                            <tr>
+                            <th>&nbsp;</th>
+                                {leaves.map(l => {                                
+                                    return (
+                                        <th className={expired_years.includes(parseInt(l.year.id)) ? 'expired' : ''}>
+                                            <span className="year">{l?.year.name}</span>
+                                            <span className="fyear">{l?.year.fiscal_year_start} - {l?.year.fiscal_year_end}</span>
+                                        </th>
+                                    )
+                                })}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>Entitlement</th>
+                                {leaves?.map(l => {
+                                    return (
+                                        <td key={l.year.id}>{l.entitlement}</td>
+                                    )
+                                })}
+                            </tr>
+                            <tr>
+                                <th>Leaves Taken</th>
+                                {leaves?.map(l => {
+                                    return (
+                                        <td key={l.year.id}>{l.leaves_taken}</td>
+                                    )
+                                })}
+                            </tr>
+                            <tr>
+                                <th>Total</th>
+                                {leaves?.map(l => {
+                                    return (
+                                        <td key={l.year.id}>{l.entitlement - l.leaves_taken}</td>
+                                    )
+                                })}
+                            </tr>
+                        </tbody>
+                    </table>
+                </>
             ) : ''}
         </div>
+        <p><strong>Note:</strong></p>
+        <p>Default Entitlement = 16 Days</p>
+        <p>Every 2 Years, 1 Day added to the initial entitlement</p>
+        <p>Every 2 Years, the previous fiscal year leaves are expired</p>
+        <p>Red Column = Anual leaves for that fiscal year are expired</p>
 
         </>
     )

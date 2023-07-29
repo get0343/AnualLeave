@@ -1,3 +1,12 @@
+p{
+    margin:2px;
+}
+
+button{
+    padding:5px;
+    border:1px solid #428af4;
+}
+
 .group{
     display: flex;
     gap:10px;
@@ -8,6 +17,14 @@
         display: flex;
         .left{
             flex:1;
+            display: flex;
+            gap:10px;
+
+            .group{
+                display: flex;
+                align-items: center;
+                gap:10px;
+            }
         }
         .right{
             flex:1;
@@ -15,7 +32,8 @@
             justify-content: flex-end;
             align-items: center;
             gap:10px;
-
+            color:rgb(52, 240, 52);
+            
             .result{
                 font-weight: bold;
                 font-size: 20px;
@@ -52,12 +70,24 @@
             >.title{
                 display: flex;
                 justify-content: space-between;
+                font-weight: bold;
+                border-bottom: 1px solid;
+                align-items: center;
+                margin-bottom:5px;
+                padding:3px 5px 3px 5px;
+
+                button{
+                    padding:2px 6px 2px 6px;
+                }
             }
             flex:1;
-            padding:10px;
+            //padding:10px;
 
             .leaves-body{
+                padding:5px;
+
                 p{
+                    margin:0px;
                     display: flex;
                     gap:10px;
 
@@ -76,6 +106,7 @@
     margin:5px;
     button{
         padding:5px;
+        border:1px solid #428af4;
     }
 }
 
@@ -88,14 +119,14 @@
     }
     table{
         width:100%;
-        border:1px solid #ccc;
+        border:0px solid #ccc;
         border-collapse: separate;
         border-spacing: 0;
 
         thead{
             tr{
                 th{
-                    border:1px solid #ccc;
+                    border:0.5px solid #ccc;
                     text-align: center;
                     &.expired{
                         background-color: red;
@@ -117,7 +148,7 @@
             tr{
                 td,th{
                     text-align: center;
-                    border:1px solid #ccc;
+                    border:0.5px solid #ccc;
                 }
             }
         }
