@@ -171,7 +171,7 @@ const CalcAnualLeave = () => {
             if(fyear_count == 0){
                 if(moment(emp_hired_date).isBetween(start_fyear, end_fyear)){
                     let worked_month = calculateDateDiff(emp_hired_date, end_fyear)[1];                    
-                    initial_entitlement = Math.floor(default_entitlement / 12 * worked_month); //the initial entitlement will be not the full year entitlement. it is calculated for the number of months worked
+                    initial_entitlement = Math.round(default_entitlement / 12 * worked_month); //the initial entitlement will be not the full year entitlement. it is calculated for the number of months worked
                     
 
                     leave.year.name = start_year;
@@ -206,7 +206,7 @@ const CalcAnualLeave = () => {
 
                     let worked_month = calculateDateDiff(start_fyear, today)[1];
                     worked_month = worked_month == 0 ? 1 : worked_month; // to avoid multiplication by zero                   
-                    initial_entitlement = Math.floor((default_entitlement + increment_days) / 12 * worked_month);
+                    initial_entitlement = Math.round((default_entitlement + increment_days) / 12 * worked_month);
                     leave.entitlement = initial_entitlement; 
                     setLeaves(prev => [...prev, leave]);                  
                     break;
@@ -246,81 +246,6 @@ const CalcAnualLeave = () => {
         });
 
         return total;
-    }
-
-    /**
-     * a function that will calculate the anual leave the employee will have from the day hired to the current date.
-     * 
-     * @returns the number of availabel anual leaves the employee has.
-     */
-
-    const getAnualLeaveRemaining = (start_year) => {
-        let start_fyear;
-        let end_fyear;
-        
-        while(true){ // run until we reach the last fiscal year 
-
-            start_fyear = moment(`${(start_year - 1)}-07-01`).format('YYYY-MM-DD'); // gets the given year start of fiscal year
-            end_fyear = moment(`${start_year}-06-30`).format('YYYY-MM-DD'); // gets the given end of fiscal year
-
-            console.log(`count=${fyear_count}, fstart=${start_fyear}, fend=${end_fyear}`);
-            ltaken = getLeaveTaken(start_year)?.taken;
-            ltaken = ltaken ? ltaken : 0;
-            //console.log(`ltaken:${ltaken}`);
-
-            if(fyear_count == 0){
-                if(moment(emp_hired_date).isBetween(start_fyear, end_fyear)){
-                    let worked_month = calculateDateDiff(emp_hired_date, end_fyear)[1];
-                    //console.log(`worked:${worked_month}`);
-                    initial_entitlement = Math.floor(default_entitlement / 12 * worked_month); //the initial entitlement will be not the full year entitlement. it is calculated for the number of months worked                    
-                    remaining_days = initial_entitlement - ltaken;
-                    //console.log(`init:${initial_entitlement}, avail: ${remaining_days}`);                    
-                    start_year += 1;
-                    fyear_count += 1;
-                } else {
-                    start_year += 1;
-                    //fyear_count += 1;
-                    //console.log(start_year);
-                }
-            } else {                
-                                
-               /**
-                * check if today is the last fiscal year and break the loop. also, calculate the last
-                * remaining anual leaves for until the current day of the last fiscal year
-                */
-                if(moment(today).isBetween(start_fyear, end_fyear)){
-                    if(fyear_count % 2 == 0) { // every 2 years add 1 day and also expire any previous year remaining leave days.
-                        increment_days += 1; 
-                        remaining_days = 0;
-                    }
-
-                    let worked_month = calculateDateDiff(start_fyear, today)[1];
-                    worked_month = worked_month == 0 ? 1 : worked_month; // to avoid multiplication by zero
-                    //console.log(`wmonth: ${worked_month}, inc:${increment_days}`);
-                    initial_entitlement = Math.floor((default_entitlement + increment_days) / 12 * worked_month);
-                    //console.log(`last init:${initial_entitlement}`);                    
-                    remaining_days += initial_entitlement - ltaken;
-                    //console.log(`last: ${remaining_days}`);
-                    break;
-                }
-
-                if(fyear_count % 2 == 0) { // every 2 years add 1 day and also expire any previous year remaining leave days.
-                    increment_days += 1;                    
-                    initial_entitlement = default_entitlement + increment_days;                    
-                    remaining_days = initial_entitlement - ltaken; // the prevous remaining days will not be added only this fiscal year entitlement is added.
-                    //console.log(`Reset: ${remaining_days}`);
-                } else {
-                    initial_entitlement = default_entitlement + increment_days;                    
-                    remaining_days += initial_entitlement - ltaken;
-                }
-
-                //console.log(`incd: ${increment_days}, Rem: ${remaining_days}`);
-                start_year += 1;
-                fyear_count += 1;
-            }
-        }// end of while
-
-        return remaining_days;
     }
 
     const handleHiredDateSelect = (e) => {
