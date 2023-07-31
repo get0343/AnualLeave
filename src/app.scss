@@ -112,6 +112,9 @@ button{
 
 .leave-summary{
     margin-top:20px;
+    width:100%;
+    overflow-x: auto;
+
     >.title{
         font-weight: bold;
         font-size:24px;
